@@ -12,9 +12,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Supabase setup
 
-The app runs with fictional demo data in local development until Supabase credentials are configured. Demo mode is disabled by default in production.
+Without Supabase credentials, local development uses fictional demo data. In a deployment, setting `NEXT_PUBLIC_DEMO_MODE=true` explicitly selects the same isolated demo experience, even if Supabase credentials are present. This mode bypasses sign-in and keeps changes in memory; use it only for a protected Preview deployment, never Production.
 
-1. In Supabase **Authentication > Users**, invite/create the practice owner account.
+1. In Supabase **Authentication > Users**, invite/create the practice owner account. Sign-in uses email links, not passwords; disable public sign-ups so only accounts you create or invite can sign in.
 2. The previously added time-tracking schema is in `supabase/time_tracking_schema.sql`. Run the app data migration `supabase/employee_hub_app.sql` in the same project's **SQL Editor**.
 3. Use the Auth user's UUID from Supabase to create the practice and owner membership. Save the returned practice ID:
 
@@ -38,14 +38,15 @@ The app runs with fictional demo data in local development until Supabase creden
    ```
 
 5. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from the Supabase project's Connect dialog. Never use a secret/service-role key in these public variables.
-6. Run `npm.cmd run dev`, then sign in with the invited owner's Supabase Auth account.
+6. Add `http://localhost:3000/auth/confirm` to Supabase **Authentication > URL Configuration > Redirect URLs** for local development. Run `npm.cmd run dev`, then request a sign-in link using the invited owner's email address.
 
 ## Deploy to Vercel
 
 1. Push this repository to GitHub and import `megan-rapp/employee-hub` from the Vercel dashboard. Use the Next.js preset and the default build command (`npm run build`).
-2. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Vercel project's Production and Preview environment variables. Leave `NEXT_PUBLIC_DEMO_MODE` false or unset for any deployment containing employee data.
-3. Add the deployed domain to Supabase **Authentication > URL Configuration** as the site URL/allowed redirect URL.
-4. Deploy and sign in with the owner account created above. Keep real employee data out of Preview deployments unless they use a separate, access-controlled Supabase project.
+2. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Vercel project's Production environment variables. Keep `NEXT_PUBLIC_DEMO_MODE` unset or false in Production.
+3. To preview fictional sample data, set `NEXT_PUBLIC_DEMO_MODE=true` for the Preview environment only. This mode bypasses sign-in and does not connect to Supabase; protect Preview deployments with Vercel Deployment Protection if they should not be public.
+4. Add the Production domain to Supabase **Authentication > URL Configuration** as the site URL, and add `https://<your-vercel-domain>/auth/confirm` as an allowed redirect URL.
+5. Deploy and request a sign-in link using the owner account created above. Keep real employee data out of Preview deployments unless they use a separate, access-controlled Supabase project.
 
 ## Prototype limitations
 

@@ -92,7 +92,15 @@ function StatusPage({ title, message }: { title: string; message: string }) {
   );
 }
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ auth_error?: string }>;
+}) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return <Dashboard mode="demo" />;
+  }
+
   if (!hasSupabaseConfig()) {
     if (isDemoModeAllowed()) {
       return <Dashboard mode="demo" />;
@@ -111,7 +119,10 @@ export default async function Home() {
     return <StatusPage title="Could not verify session" message="Refresh the page or sign in again." />;
   }
   const userId = claimsData?.claims?.sub;
-  if (!userId) return <SignIn />;
+  if (!userId) {
+    const params = await searchParams;
+    return <SignIn authError={params.auth_error === "1"} />;
+  }
 
   const { data: membership, error: membershipError } = await supabase
     .from("practice_memberships")
